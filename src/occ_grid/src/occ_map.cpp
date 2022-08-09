@@ -48,6 +48,7 @@ namespace env
     glb_occ_pub_.publish(cloud_msg);
   }
 
+  //read from mock_map, update occupancy_buffer_ , add the update_info to glb_cloud_ptr_ (occ_map)
   void OccMap::globalCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
   {
     if (is_global_map_valid_)
@@ -60,6 +61,7 @@ namespace env
     if (global_cloud.points.size() == 0)
       return;
 
+    //read from pcl and set occupancy
     pcl::PointXYZ pt;
     Eigen::Vector3d p3d;
     for (size_t i = 0; i < global_cloud.points.size(); ++i)
@@ -77,7 +79,7 @@ namespace env
       for (int y = 0; y < grid_size_[1]; ++y)
         for (int z = 0; z < grid_size_[2]; ++z)
         {
-          if (occupancy_buffer_[idxToAddress(x, y, z)] == true)
+          if (occupancy_buffer_[idxToAddress(x, y, z)] == true)   //occ_map里处于占据状态，_buffer_ 是一维存储的
           {
             Eigen::Vector3d pos;
             indexToPos(x, y, z, pos);
@@ -120,26 +122,27 @@ namespace env
     grid_size_y_multiply_z_ = grid_size_(1) * grid_size_(2);
     int buffer_size = grid_size_(0) * grid_size_y_multiply_z_;
     occupancy_buffer_.resize(buffer_size);
-    fill(occupancy_buffer_.begin(), occupancy_buffer_.end(), false);
+    fill(occupancy_buffer_.begin(), occupancy_buffer_.end(), false);  //occ_map初始化，所有个点均未被占据
 
-    //set x-y boundary occ
-    for (double cx = min_range_[0] + resolution_ / 2; cx <= max_range_[0] - resolution_ / 2; cx += resolution_)
-      for (double cz = min_range_[2] + resolution_ / 2; cz <= max_range_[2] - resolution_ / 2; cz += resolution_)
-      {
-        this->setOccupancy(Eigen::Vector3d(cx, min_range_[1] + resolution_ / 2, cz));
-        this->setOccupancy(Eigen::Vector3d(cx, max_range_[1] - resolution_ / 2, cz));
-      }
-    for (double cy = min_range_[1] + resolution_ / 2; cy <= max_range_[1] - resolution_ / 2; cy += resolution_)
-      for (double cz = min_range_[2] + resolution_ / 2; cz <= max_range_[2] - resolution_ / 2; cz += resolution_)
-      {
-        this->setOccupancy(Eigen::Vector3d(min_range_[0] + resolution_ / 2, cy, cz));
-        this->setOccupancy(Eigen::Vector3d(max_range_[0] - resolution_ / 2, cy, cz));
-      }
+    //set x-y boundary occ, 4 walls
+    // for (double cx = min_range_[0] + resolution_ / 2; cx <= max_range_[0] - resolution_ / 2; cx += resolution_)
+    //   for (double cz = min_range_[2] + resolution_ / 2; cz <= max_range_[2] - resolution_ / 2; cz += resolution_)
+    //   {
+    //     this->setOccupancy(Eigen::Vector3d(cx, min_range_[1] + resolution_ / 2, cz));
+    //     this->setOccupancy(Eigen::Vector3d(cx, max_range_[1] - resolution_ / 2, cz));
+    //   }
+    // for (double cy = min_range_[1] + resolution_ / 2; cy <= max_range_[1] - resolution_ / 2; cy += resolution_)
+    //   for (double cz = min_range_[2] + resolution_ / 2; cz <= max_range_[2] - resolution_ / 2; cz += resolution_)
+    //   {
+    //     this->setOccupancy(Eigen::Vector3d(min_range_[0] + resolution_ / 2, cy, cz));
+    //     this->setOccupancy(Eigen::Vector3d(max_range_[0] - resolution_ / 2, cy, cz));
+    //   }
     //set z-low boundary occ
     for (double cx = min_range_[0] + resolution_ / 2; cx <= max_range_[0] - resolution_ / 2; cx += resolution_)
       for (double cy = min_range_[1] + resolution_ / 2; cy <= max_range_[1] - resolution_ / 2; cy += resolution_)
       {
         this->setOccupancy(Eigen::Vector3d(cx, cy, min_range_[2] + resolution_ / 2));
+        this->setOccupancy(Eigen::Vector3d(cx, cy, min_range_[2] + resolution_ / 2 + resolution_)); // to make up the gap between obstacle and floor
       }
 
     global_occ_vis_timer_ = node_.createTimer(ros::Duration(5), &OccMap::globalOccVisCallback, this);

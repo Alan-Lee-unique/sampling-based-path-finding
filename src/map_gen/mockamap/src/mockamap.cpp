@@ -73,8 +73,7 @@ pubGlbObs(self_msgs_and_srvs::GlbObsRcv::Request&  req,
   return true;
 }
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "mockamap");
   ros::NodeHandle nh;
@@ -105,8 +104,8 @@ main(int argc, char** argv)
 
   nh_private.param("type", type, 1);
 
-  scale = 1 / scale;
-  sizeX = sizeX * scale;
+  scale = 1 / scale;   // 分辨率倒数
+  sizeX = sizeX * scale;  //格点数量
   sizeY = sizeY * scale;
   sizeZ = sizeZ * scale;
 

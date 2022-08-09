@@ -8,9 +8,9 @@
         <param name="resolution" type="double" value="0.1"/>
 
         <!-- map size unit meter-->
-        <param name="x_length" type="double" value="14"/>
-        <param name="y_length" type="double" value="58"/>
-        <param name="z_length" type="double" value="3.5"/>
+        <param name="x_length" type="double" value="50"/>
+        <param name="y_length" type="double" value="50"/>
+        <param name="z_length" type="double" value="8.0"/>
         <!-- 1 perlin noise 3D -->
         <!-- 2 perlin box random map-->
         <!-- 3 2d maze still developing, dead may because 2D-->
@@ -35,7 +35,7 @@
         <!--    <param name="type" type="int" value="2"/>-->
         <param name="width_min" type="double" value="0.6"/>
         <param name="width_max" type="double" value="1.5"/>
-        <param name="obstacle_number" type="int" value="50"/>
+        <param name="obstacle_number" type="int" value="100"/>
 
         <!--    <param name="type" type="int" value="3"/>-->
         <param name="road_width" type="double" value="0.5"/>

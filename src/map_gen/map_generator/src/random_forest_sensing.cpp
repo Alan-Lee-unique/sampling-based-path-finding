@@ -65,13 +65,13 @@ void RandomMapGenerate()
 
    uniform_real_distribution<double> rand_theta = uniform_real_distribution<double>(-M_PI, M_PI);
 
-   uniform_real_distribution<double> rand_x = uniform_real_distribution<double>(_x_l, _x_h);
-   uniform_real_distribution<double> rand_y = uniform_real_distribution<double>(_y_l, _y_h);
+   // uniform_real_distribution<double> rand_x = uniform_real_distribution<double>(_x_l, _x_h);
+   // uniform_real_distribution<double> rand_y = uniform_real_distribution<double>(_y_l, _y_h);
    uniform_real_distribution<double> rand_w = uniform_real_distribution<double>(_w_l, _w_h);
    uniform_real_distribution<double> rand_h = uniform_real_distribution<double>(_h_l, _h_h);
 
-   uniform_real_distribution<double> rand_x_circle = uniform_real_distribution<double>(_x_l + 1.0, _x_h - 1.0);
-   uniform_real_distribution<double> rand_y_circle = uniform_real_distribution<double>(_y_l + 1.0, _y_h - 1.0);
+   // uniform_real_distribution<double> rand_x_circle = uniform_real_distribution<double>(_x_l + 1.0, _x_h - 1.0);
+   // uniform_real_distribution<double> rand_y_circle = uniform_real_distribution<double>(_y_l + 1.0, _y_h - 1.0);
    uniform_real_distribution<double> rand_r_circle = uniform_real_distribution<double>(_w_c_l, _w_c_h);
 
    uniform_real_distribution<double> rand_roll = uniform_real_distribution<double>(-M_PI, +M_PI);
@@ -82,12 +82,14 @@ void RandomMapGenerate()
 
    pcl::PointXYZ pt_random;
 
-   int base2(2), base3(3), base4(4); //Halton base
+   int base2(2), base3(3) /*, base4(4)*/ ; //Halton base
    // firstly, we put some circles
    for (int i = 0; i < _cir_num; i++)
    {
       double x0, y0, z0, R;
       std::vector<Vector3d> circle_set;
+
+      //确定圆环中心点位置
 
       // x0 = rand_x_circle(eng);
       // y0 = rand_y_circle(eng);
@@ -130,6 +132,7 @@ void RandomMapGenerate()
 
       double x, y, z;
       Vector3d pt3, pt3_rot;
+      // 似乎是根据椭圆的长轴和短轴，生成一圈的椭圆点
       for (double theta = -M_PI; theta < M_PI; theta += 0.025)
       {
          x = a * cos(theta) * R;
@@ -138,6 +141,8 @@ void RandomMapGenerate()
          pt3 << x, y, z;
          circle_set.push_back(pt3);
       }
+
+      // 设置圆环的姿态
       // Define a random 3d rotation matrix
       Matrix3d Rot;
       double roll, pitch, yaw;
@@ -179,7 +184,7 @@ void RandomMapGenerate()
    else
       is_kdtree_empty = true;
 
-   // then, we put some pilar
+   // then, we put some pillar(柱子)
    for (int i = 0; i < _obs_num; i++)
    {
       double x, y, w, h;
@@ -240,7 +245,7 @@ void RandomMapGenerate()
       {
          for (int s = -halfWidNum; s < halfWidNum; s++)
          {
-            // make pilars hollow
+            // make pillars hollow  (整空心的)
             if (r > -halfWidNum + 2 && r < (halfWidNum - 3))
             {
                if (s > -halfWidNum + 2 && s < (halfWidNum - 3))

@@ -514,7 +514,7 @@ namespace visualization
         template <class TOPIC_TYPE, class TOPIC>
         void registe(const TOPIC& topic) {
             auto got = publisher_map_.find(topic);
-            if (got == publisher_map_.end()) {
+            if (got == publisher_map_.end()) {              //not find
                 ros::Publisher pub = nh_.advertise<TOPIC_TYPE>(topic, 10);
                 publisher_map_[topic] = pub;
             }

@@ -622,6 +622,7 @@ Maps::maze2D()
   switch (type)
   {
     case 1:
+      //some matrix bug in next line call --alan
       recursiveDivision(0, maze.cols() - 1, 0, maze.rows() - 1, maze);
       break;
   }
@@ -824,7 +825,7 @@ Maps::Maze3DGen()
       for (int k = 0; k < info.sizeZ; k++)
       { // for every scaled coordinate points
         pcl::PointXYZ test;
-        test.x = i / info.scale - info.sizeX / (2 * info.scale);
+        test.x = i / info.scale - info.sizeX / (2 * info.scale);     //计算出的坐标点减去原点位置，所以是xyz中心对称的图
         test.y = j / info.scale - info.sizeY / (2 * info.scale);
         test.z = k / info.scale -
                  info.sizeZ /

@@ -14,10 +14,12 @@
   <arg name="init_y" value="0.0"/>
   <arg name="init_z" value="0.0"/>
 
-  <arg name="forest" value="1"/>
+  <arg name="forest" value="0"/>
 
   <!-- map generation -->
   <!-- env for front-end compare-->
+  <!-- if = true, contain this label; if = false, not contain -->
+  <!-- unless = false, contain this label; unless = true, not contain -->
   <node pkg="map_generator" name="random_forest" type="random_forest" output="screen" if="$(arg forest)">
     <remap from="~odometry" to="$(arg odom_topic)"/>
     <param name="init_state_x" value="$(arg init_x)"/>
@@ -36,6 +38,6 @@
     <param name="CircleShape/upper_circle_rad" value="3.2"/>
     <param name="sensing/rate" value="1.0"/>
   </node>
-  <include file="$(find mockamap)/launch/mockamap.launch" unless="$(arg forest)"/>
+  <include file="$(find mockamap)/launch/rrt_mockamap.launch" unless="$(arg forest)"/>
 
 </launch>

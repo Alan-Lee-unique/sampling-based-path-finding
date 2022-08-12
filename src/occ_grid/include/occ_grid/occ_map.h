@@ -48,6 +48,8 @@ namespace env
     double getResolution() { return resolution_; }
     Eigen::Vector3d getOrigin() { return origin_; }
     Eigen::Vector3d getMapSize() { return map_size_; };
+
+    // return whether this position is free in occ_map
     bool isStateValid(const Eigen::Vector3d &pos) const
     {
       Eigen::Vector3i idx = posToIndex(pos);
@@ -55,6 +57,10 @@ namespace env
         return false;
       return (occupancy_buffer_[idxToAddress(idx)] == false);
     };
+
+    // check each grid in vector (p0, p1) isStateValid()
+    // check first occupied grid, return false
+    // all grids free, return true 
     bool isSegmentValid(const Eigen::Vector3d &p0, const Eigen::Vector3d &p1, double max_dist = DBL_MAX) const
     {
       Eigen::Vector3d dp = p1 - p0;
@@ -64,8 +70,8 @@ namespace env
         return false;
       }
       RayCaster raycaster;
-      bool need_ray = raycaster.setInput(p0 / resolution_, p1 / resolution_); //(ray start, ray end)
-      if (!need_ray)
+      bool need_ray = raycaster.setInput(p0 / resolution_, p1 / resolution_); //(ray start, ray end) pos2index
+      if (!need_ray)     //start and end int the same occ_grid
         return true;
       Eigen::Vector3d half = Eigen::Vector3d(0.5, 0.5, 0.5);
       Eigen::Vector3d ray_pt;
@@ -134,6 +140,7 @@ namespace env
     return isInMap(idx);
   }
 
+  // 用位运算 或 写的，咋说呢，不明觉厉
   inline bool OccMap::isInMap(const Eigen::Vector3i &id) const
   {
     return ((id[0] | (grid_size_[0] - 1 - id[0]) | id[1] | (grid_size_[1] - 1 - id[1]) | id[2] | (grid_size_[2] - 1 - id[2])) >= 0);
@@ -146,6 +153,7 @@ namespace env
     id(2) = floor((pos(2) - origin_(2)) * resolution_inv_);
   }
 
+  // all index >= 0 min_range的相对索引
   inline Eigen::Vector3i OccMap::posToIndex(const Eigen::Vector3d &pos) const
   {
     Eigen::Vector3i id;

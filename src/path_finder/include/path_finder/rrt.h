@@ -180,7 +180,7 @@ namespace path_plan
       node->cost_from_start = parent->cost_from_start + cost_from_parent;
       parent->children.push_back(node);
 
-      // for all its descedants, change the cost_from_start and tau_from_start;
+      // for all its descedants, change the cost_from_start and tau_from_start;更新所有后继节点的代价
       RRTNode3DPtr descendant(node);
       std::queue<RRTNode3DPtr> Q;
       Q.push(descendant);
@@ -215,19 +215,19 @@ namespace path_plan
       bool goal_found = false;
 
       /* kd tree init */
-      kdtree *kd_tree = kd_create(3);
-      //Add start and goal nodes to kd tree
+      kdtree *kd_tree = kd_create(3);  // k = 3 ,三维的树
+      //Add start and goal nodes to kd tree， 这里只加入了start节点
       kd_insert3(kd_tree, start_node_->x[0], start_node_->x[1], start_node_->x[2], start_node_);
 
       /* main loop */
       int idx = 0;
       for (idx = 0; (ros::Time::now() - rrt_start_time).toSec() < search_time_ && valid_tree_node_nums_ < max_tree_node_nums_; ++idx)
       {
-        /* biased random sampling */
+        /* biased random sampling, sample a point */
         Eigen::Vector3d x_rand;
         sampler_.samplingOnce(x_rand);
         // samplingOnce(x_rand);
-        if (!map_ptr_->isStateValid(x_rand))
+        if (!map_ptr_->isStateValid(x_rand))  //随机点在障碍物里，不代表指定步长生成的采样点就不能用啊
         {
           continue;
         }
@@ -287,6 +287,8 @@ namespace path_plan
       }
       /* end of sample once */
 
+      /***  visualization ***/
+      // visualize the whole sample tree
       vector<Eigen::Vector3d> vertice;
       vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> edges;
       sampleWholeTree(start_node_, vertice, edges);

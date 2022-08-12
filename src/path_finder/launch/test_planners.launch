@@ -13,7 +13,7 @@
   <arg name="search_radius" value="6.0" />
   <arg name="search_time" value="0.1" />
   <arg name="max_tree_node_nums" value="1000" />
-  <arg name="use_informed_sampling" value="true" />
+  <arg name="use_informed_sampling" value="false" />
   <arg name="use_GUILD_sampling" value="false" />
   <arg name="run_rrt" value="true" />
   <arg name="run_rrt_star" value="true" />

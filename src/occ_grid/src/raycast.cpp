@@ -10,12 +10,12 @@ int signum(int x)
 
 double mod(double value, double modulus)
 {
-  return fmod(fmod(value, modulus) + modulus, modulus);
+  return fmod(fmod(value, modulus) + modulus, modulus);  //fmod(a,b),返回x/y的余数
 }
 
+// Find the smallest positive t such that s+t*ds is an integer.
 double intbound(double s, double ds)
 {
-  // Find the smallest positive t such that s+t*ds is an integer.
   if (ds < 0)
   {
     return intbound(-s, -ds);
@@ -260,6 +260,7 @@ void Raycast(const Eigen::Vector3d& start, const Eigen::Vector3d& end, const Eig
   }
 }
 
+// set input, calculate related parameters
 bool RayCaster::setInput(const Eigen::Vector3d& start, const Eigen::Vector3d& end/* , const Eigen::Vector3d& min,
                          const Eigen::Vector3d& max */)
 {
@@ -268,14 +269,17 @@ bool RayCaster::setInput(const Eigen::Vector3d& start, const Eigen::Vector3d& en
   // max_ = max;
   // min_ = min;
 
+  //turn into index
+  //start idx
   x_ = (int)std::floor(start_.x());
   y_ = (int)std::floor(start_.y());
   z_ = (int)std::floor(start_.z());
+  // end idx
   endX_ = (int)std::floor(end_.x());
   endY_ = (int)std::floor(end_.y());
   endZ_ = (int)std::floor(end_.z());
   direction_ = (end_ - start_);
-  maxDist_ = direction_.squaredNorm();
+  maxDist_ = direction_.squaredNorm(); //向量元素的平方和
 
   // Break out direction vector.
   dx_ = endX_ - x_;
@@ -309,6 +313,8 @@ bool RayCaster::setInput(const Eigen::Vector3d& start, const Eigen::Vector3d& en
     return true;
 }
 
+//step in x, y, or z(就近原则) each step
+//return can step or not, if already in end grid, return false; if successfully step, return true
 bool RayCaster::step(Eigen::Vector3d& ray_pt)
 {
   // if (x_ >= min_.x() && x_ < max_.x() && y_ >= min_.y() && y_ < max_.y() && z_ >= min_.z() && z_ < max_.z())

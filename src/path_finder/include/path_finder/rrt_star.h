@@ -191,6 +191,7 @@ namespace path_plan
       return new_node_ptr;
     }
 
+    // change parent for &node, update children's cost of &node, may change goalnode->cost_from_start
     void changeNodeParent(RRTNode3DPtr &node, RRTNode3DPtr &parent, const double &cost_from_parent)
     {
       if (node->parent)
@@ -262,7 +263,7 @@ namespace path_plan
         RRTNode3DPtr nearest_node = (RRTNode3DPtr)kd_res_item_data(p_nearest);
         kd_res_free(p_nearest);
 
-        Eigen::Vector3d x_new = steer(nearest_node->x, x_rand, steer_length_);
+        Eigen::Vector3d x_new = steer(nearest_node->x, x_rand, steer_length_); //如果距离小于steer，就直接用xrand;否则扩展steer长度
         if (!map_ptr_->isSegmentValid(nearest_node->x, x_new))
         {
           continue;
@@ -438,6 +439,7 @@ namespace path_plan
       }
       /* end of sample once */
 
+      /*** visualization ***/
       vector<Eigen::Vector3d> vertice;
       vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> edges;
       sampleWholeTree(start_node_, vertice, edges);

@@ -89,7 +89,11 @@ namespace path_plan
       sampler_.reset(); // !important
       if (use_informed_sampling_)
       {
+        // ROS_INFO("\033[1;32m----> [rrt_star] Wohu! sampler's informed_ is %d .\033[0m", sampler_.getInformed()); 
         calInformedSet(10000000000.0, s, g, scale_, trans_, rot_);
+        // 现在的测试情况是rrt*先执行均匀采样，在找到一条路径之后才会开启informed sampling模式
+        // add next line, informed sampling, but couldn't find a path
+        // sampler_.setInformedSacling(scale_); 
         sampler_.setInformedTransRot(trans_, rot_);
       }
       return rrt_star(s, g);
@@ -168,6 +172,7 @@ namespace path_plan
       return (p1 - p2).norm();
     }
 
+    //dis <= steer_length, return x_rand; else return node 
     Eigen::Vector3d steer(const Eigen::Vector3d &nearest_node_p, const Eigen::Vector3d &rand_node_p, double len)
     {
       Eigen::Vector3d diff_vec = rand_node_p - nearest_node_p;
@@ -264,6 +269,10 @@ namespace path_plan
         kd_res_free(p_nearest);
 
         Eigen::Vector3d x_new = steer(nearest_node->x, x_rand, steer_length_); //如果距离小于steer，就直接用xrand;否则扩展steer长度
+        if (!map_ptr_->isStateValid(x_new))
+        {
+          continue;
+        }
         if (!map_ptr_->isSegmentValid(nearest_node->x, x_new))
         {
           continue;
@@ -350,6 +359,7 @@ namespace path_plan
               first_path_use_time_ = (ros::Time::now() - rrt_start_time).toSec();
             }
             goal_found = true;
+            // ROS_INFO("\033[1;32m----> Now find a new way!!!\033[0m"); 
             changeNodeParent(goal_node_, new_node, dist_to_goal);
             vector<Eigen::Vector3d> curr_best_path;
             fillPath(goal_node_, curr_best_path);
@@ -359,6 +369,7 @@ namespace path_plan
             // vis_ptr_->visualize_pointcloud(curr_best_path, "rrt_star_final_wpts");
             if (use_informed_sampling_)
             {
+              // ROS_INFO("\033[1;32m----> start informed sampling!!!!\033[0m"); 
               scale_[0] = goal_node_->cost_from_start / 2.0;
               scale_[1] = sqrt(scale_[0] * scale_[0] - c_square);
               scale_[2] = scale_[1];
@@ -403,14 +414,19 @@ namespace path_plan
               changeNodeParent(curr_node.node_ptr, new_node, dist_to_potential_child);
               if (best_cost_before_rewire > goal_node_->cost_from_start)
               {
+                
+                // ROS_INFO("\033[1;32m----> Now find a new way!!!\033[0m"); 
+
                 vector<Eigen::Vector3d> curr_best_path;
                 fillPath(goal_node_, curr_best_path);
                 path_list_.emplace_back(curr_best_path);
                 solution_cost_time_pair_list_.emplace_back(goal_node_->cost_from_start, (ros::Time::now() - rrt_start_time).toSec());
                 // vis_ptr_->visualize_path(curr_best_path, "rrt_star_final_path");
                 // vis_ptr_->visualize_pointcloud(curr_best_path, "rrt_star_final_wpts");
-                if (use_informed_sampling_)
+                if (use_informed_sampling_) 
                 {
+                  // ROS_INFO("\033[1;32m----> start informed sampling!!!!\033[0m"); 
+
                   scale_[0] = goal_node_->cost_from_start / 2.0;
                   scale_[1] = sqrt(scale_[0] * scale_[0] - c_square);
                   scale_[2] = scale_[1];
@@ -452,8 +468,8 @@ namespace path_plan
         node_p.center = vertice[i];
         balls.push_back(node_p);
       }
-      vis_ptr_->visualize_balls(balls, "tree_vertice", visualization::Color::blue, 1.0);
-      vis_ptr_->visualize_pairline(edges, "tree_edges", visualization::Color::green, 0.1);
+      vis_ptr_->visualize_balls(balls, "rrt_star/tree_vertice", visualization::Color::blue, 1.0);
+      vis_ptr_->visualize_pairline(edges, "rrt_star/tree_edges", visualization::Color::green, 0.1);
 
       if (goal_found)
       {

@@ -275,6 +275,7 @@ namespace path_plan
               first_path_use_time_ = (ros::Time::now() - rrt_start_time).toSec();
             }
             goal_found = true;
+            // ROS_INFO("\033[1;32m----> Now find a new way!!!\033[0m"); 
             changeNodeParent(goal_node_, new_node, dist_to_goal);
             vector<Eigen::Vector3d> curr_best_path;
             fillPath(goal_node_, curr_best_path);
@@ -301,8 +302,8 @@ namespace path_plan
         node_p.center = vertice[i];
         balls.push_back(node_p);
       }
-      vis_ptr_->visualize_balls(balls, "tree_vertice", visualization::Color::blue, 1.0);
-      vis_ptr_->visualize_pairline(edges, "tree_edges", visualization::Color::yellow, 0.1);
+      vis_ptr_->visualize_balls(balls, "rrt/tree_vertice", visualization::Color::blue, 1.0);
+      vis_ptr_->visualize_pairline(edges, "rrt/tree_edges", visualization::Color::yellow, 0.1);
 
       if (goal_found)
       {

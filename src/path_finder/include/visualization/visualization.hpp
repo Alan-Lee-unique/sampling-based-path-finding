@@ -368,7 +368,7 @@ namespace visualization
         }
 
         template <class ARROWS, class TOPIC>
-        // ARROWS: pair<Vector3d, Vector3d>
+        // ARROWS: pair<Vector3d start_pt , Vector3d end_pt> 
         void visualize_arrows(const ARROWS &arrows, const TOPIC &topic, const Color &color)
         {
             auto got = publisher_map_.find(topic);
@@ -387,7 +387,8 @@ namespace visualization
             arrow_msg.id = 0;
             arrow_msg.points.resize(2);
             setMarkerPose(arrow_msg, 0, 0, 0);
-            setMarkerScale(arrow_msg, 0.4, 0.7, 0);
+            // setMarkerScale(arrow_msg, 0.4, 0.7, 0);
+            setMarkerScale(arrow_msg, 0.2, 0.4, 0);
             setMarkerColor(arrow_msg, color, 0.7);
             visualization_msgs::MarkerArray arrow_list_msg;
             arrow_list_msg.markers.reserve(1 + arrows.size());

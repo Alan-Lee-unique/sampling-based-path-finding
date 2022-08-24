@@ -64,6 +64,7 @@ public:
 
   void uniformSamplingOnce(Eigen::Vector3d &sample)
   {
+    // ROS_WARN(" <-----> uuuuuuniformed sampling now."); 
     sample[0] = uniform_rand_(gen_);
     sample[1] = uniform_rand_(gen_);
     sample[2] = uniform_rand_(gen_);
@@ -73,6 +74,7 @@ public:
 
   void informedSamplingOnce(Eigen::Vector3d &sample)
   {
+    // ROS_INFO("----> informed sampling now."); 
     // random uniform sampling in a unit 3-ball
     Eigen::Vector3d p;
     p[0] = normal_rand_(gen_);
@@ -146,6 +148,11 @@ public:
   {
     return uniform_rand_(gen_);
   }
+
+  // bool getInformed()
+  // {
+  //   return informed_;
+  // }
 
 private:
   Eigen::Vector3d range_, origin_;

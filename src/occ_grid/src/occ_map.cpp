@@ -145,7 +145,7 @@ namespace env
         this->setOccupancy(Eigen::Vector3d(cx, cy, min_range_[2] + resolution_ / 2 + resolution_)); // to make up the gap between obstacle and floor
       }
 
-    global_occ_vis_timer_ = node_.createTimer(ros::Duration(5), &OccMap::globalOccVisCallback, this);
+    global_occ_vis_timer_ = node_.createTimer(ros::Duration(2.0), &OccMap::globalOccVisCallback, this);
     global_cloud_sub_ = node_.subscribe<sensor_msgs::PointCloud2>("/global_cloud", 1, &OccMap::globalCloudCallback, this);
     glb_occ_pub_ = node_.advertise<sensor_msgs::PointCloud2>("/occ_map/glb_map", 1);
 

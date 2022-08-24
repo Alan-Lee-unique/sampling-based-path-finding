@@ -315,6 +315,7 @@ bool RayCaster::setInput(const Eigen::Vector3d& start, const Eigen::Vector3d& en
 
 //step in x, y, or z(就近原则) each step
 //return can step or not, if already in end grid, return false; if successfully step, return true
+// store the pos before step in ray_pt(idx mode)
 bool RayCaster::step(Eigen::Vector3d& ray_pt)
 {
   // if (x_ >= min_.x() && x_ < max_.x() && y_ >= min_.y() && y_ < max_.y() && z_ >= min_.z() && z_ < max_.z())

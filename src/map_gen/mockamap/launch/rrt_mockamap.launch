@@ -5,7 +5,7 @@
         <param name="update_freq" type="double" value="1.0"/>
 
         <!--  box edge length, unit meter-->
-        <param name="resolution" type="double" value="0.1"/>
+        <param name="resolution" type="double" value="0.5"/>
 
         <!-- map size unit meter-->
         <param name="x_length" type="double" value="50"/>
@@ -15,7 +15,7 @@
         <!-- 2 perlin box random map-->
         <!-- 3 2d maze still developing, dead may because 2D-->
         <!-- 4 maze3D map-->
-        <param name="type" type="int" value="2"/>
+        <param name="type" type="int" value="3"/>
 
         <!-- 1 perlin noise parameters -->
         <!-- complexity:    base noise frequency,
@@ -38,7 +38,7 @@
         <param name="obstacle_number" type="int" value="100"/>
 
         <!--    <param name="type" type="int" value="3"/>-->
-        <param name="road_width" type="double" value="0.5"/>
+        <param name="road_width" type="double" value="4.0"/>
         <param name="add_wall_x" type="int" value="0"/>
         <param name="add_wall_y" type="int" value="0"/>
         <!--    maze type: -->

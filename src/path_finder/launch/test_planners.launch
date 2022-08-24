@@ -17,6 +17,7 @@
   <arg name="use_GUILD_sampling" value="false" />
   <arg name="run_rrt" value="true" />
   <arg name="run_rrt_star" value="true" />
+  <arg name="run_bounce_rrt_star" value="true" />
   <arg name="run_rrt_sharp" value="false" />
   <arg name="run_brrt" value="false" />
   <arg name="run_brrt_star" value="false" />
@@ -27,6 +28,7 @@
 
     <param name="run_rrt" value="$(arg run_rrt)" type="bool"/>
     <param name="run_rrt_star" value="$(arg run_rrt_star)" type="bool"/>
+    <param name="run_bounce_rrt_star" value="$(arg run_bounce_rrt_star)" type="bool"/>
     <param name="run_rrt_sharp" value="$(arg run_rrt_sharp)" type="bool"/>
     <param name="run_brrt" value="$(arg run_brrt)" type="bool"/>
     <param name="run_brrt_star" value="$(arg run_brrt_star)" type="bool"/>

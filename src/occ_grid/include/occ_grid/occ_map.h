@@ -48,6 +48,7 @@ namespace env
     double getResolution() { return resolution_; }
     Eigen::Vector3d getOrigin() { return origin_; }
     Eigen::Vector3d getMapSize() { return map_size_; };
+    bool isInMap(const Eigen::Vector3d &pos) const;
 
     // return whether this position is free in occ_map
     bool isStateValid(const Eigen::Vector3d &pos) const
@@ -61,6 +62,7 @@ namespace env
     // check each grid in vector (p0, p1) isStateValid()
     // check first occupied grid, return false
     // all grids free, return true 
+    // corrected(didn't check p1's validity, so conrner case:  p1 is first collision point)
     bool isSegmentValid(const Eigen::Vector3d &p0, const Eigen::Vector3d &p1, double max_dist = DBL_MAX) const
     {
       Eigen::Vector3d dp = p1 - p0;
@@ -85,6 +87,90 @@ namespace env
           return false;
         }
       }
+      Eigen::Vector3d tmp = (ray_pt + half) * resolution_;
+      if (!this->isStateValid(tmp))
+      {
+        return false;
+      }
+      return true;
+    }
+
+    // new function, return bool and store first occ_grid pos in x_bounce
+    // call this when sample new point and check segment, find bounce point(free) before first collision
+    // add conrner case check:  p1 validity check
+    // corner case2: 2 grid(1 is free, 2 is occ, return false, x_bounce is start)
+    bool isSegmentValid_B(const Eigen::Vector3d &p0, const Eigen::Vector3d &p1, Eigen::Vector3d & x_bounce) const
+    {
+      RayCaster raycaster;
+      bool need_ray = raycaster.setInput(p0 / resolution_, p1 / resolution_); // (ray start, ray end) pos2index
+      if (!need_ray)     // start and end int the same occ_grid
+        return true;
+      Eigen::Vector3d half = Eigen::Vector3d(0.5, 0.5, 0.5);
+      Eigen::Vector3d ray_pt;
+      if (!raycaster.step(ray_pt)) // skip the ray start point; couldn't step at first
+        return true;
+      Eigen::Vector3d last_free_point = (ray_pt + half) * resolution_;
+      while (raycaster.step(ray_pt))
+      {
+        Eigen::Vector3d tmp = (ray_pt + half) * resolution_;
+        if (!this->isStateValid(tmp))
+        { 
+          x_bounce = last_free_point;
+          return false;
+        }
+        last_free_point = tmp;
+      }
+      // for corner case, check end point state
+      Eigen::Vector3d tmp = (ray_pt + half) * resolution_;
+      if (!this->isStateValid(tmp))
+      { 
+        x_bounce = last_free_point;
+        return false;
+      }
+      return true;
+    }
+
+    // dir: (free_avgCenter - occ_avgCenter).normalized()
+    // suitable for only two parts: occ and free
+    // may bug when occ-free-occ or free-occ-free
+    bool calNormVector(const Eigen::Vector3d &pos, Eigen::Vector3d &normVec) const
+    {
+      Eigen::Vector3i center_idx = posToIndex(pos);
+      Eigen::Vector3d free_center(0,0,0), occ_center(0,0,0);
+      int free_cnt = 0, occ_cnt = 0;
+
+      for(int id_x = -2; id_x <= 2; id_x++)
+        for(int id_y = -2; id_y <= 2; id_y++)
+          for(int id_z = -2; id_z <= 2; id_z++)
+          {
+            if(id_x == 0 && id_y == 0 && id_z == 0)    // skip center
+              continue;
+            
+            Eigen::Vector3i nei_idx, bias(id_x, id_y, id_z);
+            nei_idx = center_idx + bias;
+
+            if(!isInMap(nei_idx))
+              continue;
+
+            Eigen::Vector3d tmp;
+            indexToPos(nei_idx, tmp);             // turn idx to pos(tmp)
+            if(occupancy_buffer_[idxToAddress(nei_idx)]) // occ
+            {
+              occ_cnt++;
+              occ_center += tmp;
+            }else{                                // free
+              free_cnt++;
+              free_center += tmp;
+            }
+          }
+      
+      if(occ_cnt == 0 || free_cnt == 0)
+      {
+        ROS_WARN("[OCC_map] occ_cnt == 0 or free_cnt == 0, can not calculate norm vector.");
+        return false;
+      }
+
+      normVec = (free_center / free_cnt - occ_center / occ_cnt).normalized();
       return true;
     }
 
@@ -103,7 +189,6 @@ namespace env
     void posToIndex(const Eigen::Vector3d &pos, Eigen::Vector3i &id) const;
     void indexToPos(const Eigen::Vector3i &id, Eigen::Vector3d &pos) const;
     void indexToPos(const int &x, const int &y, const int &z, Eigen::Vector3d &pos) const;
-    bool isInMap(const Eigen::Vector3d &pos) const;
     bool isInMap(const Eigen::Vector3i &id) const;
 
     Eigen::Vector3d origin_, map_size_, min_range_, max_range_;
@@ -133,7 +218,7 @@ namespace env
     return id(0) * grid_size_y_multiply_z_ + id(1) * grid_size_(2) + id(2);
   }
 
-  inline bool OccMap::isInMap(const Eigen::Vector3d &pos) const
+  /* inline */ bool OccMap::isInMap(const Eigen::Vector3d &pos) const
   {
     Eigen::Vector3i idx;
     posToIndex(pos, idx);

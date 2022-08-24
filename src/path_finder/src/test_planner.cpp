@@ -21,6 +21,7 @@ OF SUCH DAMAGE.
 #include "self_msgs_and_srvs/GlbObsRcv.h"
 #include "occ_grid/occ_map.h"
 #include "path_finder/rrt_sharp.h"
+#include "path_finder/bounce_rrt_star.h"
 #include "path_finder/rrt_star.h"
 #include "path_finder/rrt.h"
 #include "path_finder/brrt.h"
@@ -42,6 +43,7 @@ private:
     std::shared_ptr<visualization::Visualization> vis_ptr_;
     shared_ptr<path_plan::RRTSharp> rrt_sharp_ptr_;
     shared_ptr<path_plan::RRTStar> rrt_star_ptr_;
+    shared_ptr<path_plan::BounceRRTStar> bounce_rrt_star_ptr_;
     shared_ptr<path_plan::RRT> rrt_ptr_;
     shared_ptr<path_plan::BRRT> brrt_ptr_;
     shared_ptr<path_plan::BRRTStar> brrt_star_ptr_;
@@ -49,7 +51,7 @@ private:
     Eigen::Vector3d start_, goal_;
 
     bool run_rrt_, run_rrt_star_, run_rrt_sharp_;
-    bool run_brrt_, run_brrt_star_;
+    bool run_brrt_, run_brrt_star_, run_bounce_rrt_star_;
 
 public:
     TesterPathFinder(const ros::NodeHandle &nh) : nh_(nh)
@@ -65,6 +67,12 @@ public:
         // rrt_sharp_ptr_->setVisualizer(vis_ptr_);
         // vis_ptr_->registe<nav_msgs::Path>("rrt_sharp_final_path");
         // vis_ptr_->registe<sensor_msgs::PointCloud2>("rrt_sharp_final_wpts");
+        
+        bounce_rrt_star_ptr_ = std::make_shared<path_plan::BounceRRTStar>(nh_, env_ptr_);
+        bounce_rrt_star_ptr_->setVisualizer(vis_ptr_);
+        vis_ptr_->registe<nav_msgs::Path>("bounce_rrt_star_final_path");
+        vis_ptr_->registe<sensor_msgs::PointCloud2>("bounce_rrt_star_final_wpts");
+        vis_ptr_->registe<visualization_msgs::MarkerArray>("bounce_rrt_star_paths");
 
         rrt_star_ptr_ = std::make_shared<path_plan::RRTStar>(nh_, env_ptr_);
         rrt_star_ptr_->setVisualizer(vis_ptr_);
@@ -95,6 +103,7 @@ public:
 
         nh_.param("run_rrt", run_rrt_, true);
         nh_.param("run_rrt_star", run_rrt_star_, true);
+        nh_.param("run_bounce_rrt_star", run_bounce_rrt_star_, true);
         nh_.param("run_rrt_sharp", run_rrt_sharp_, true);
         nh_.param("run_brrt", run_brrt_, false);
         nh_.param("run_brrt_star", run_brrt_star_, false);
@@ -109,6 +118,17 @@ public:
         ROS_INFO_STREAM("\n-----------------------------\ngoal rcved at " << goal_.transpose());
         vis_ptr_->visualize_a_ball(start_, 0.3, "start", visualization::Color::pink);
         vis_ptr_->visualize_a_ball(goal_, 0.3, "goal", visualization::Color::steelblue);
+
+        // for test
+        // vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> arrows;
+        // std::pair<Eigen::Vector3d, Eigen::Vector3d> arrow1;
+        // arrow1.first = Eigen::Vector3d(0, 0, 0);
+        // arrow1.second = Eigen::Vector3d(1, 1, 1);
+        // arrows.push_back(arrow1);
+        // arrow1.first = Eigen::Vector3d(2, 2, 2);
+        // arrow1.second = Eigen::Vector3d(1, 1, 1);
+        // arrows.push_back(arrow1);
+        // vis_ptr_->visualize_arrows(arrows, "arrow", visualization::Color::chartreuse);
 
         // BiasSampler sampler;
         // sampler.setSamplingRange(env_ptr_->getOrigin(), env_ptr_->getMapSize());
@@ -132,7 +152,8 @@ public:
                 vis_ptr_->visualize_path(final_path, "rrt_final_path");
                 vis_ptr_->visualize_pointcloud(final_path, "rrt_final_wpts");
                 vector<std::pair<double, double>> slns = rrt_ptr_->getSolutions();
-                ROS_INFO_STREAM("[RRT] final path len: " << slns.back().first);
+                ROS_INFO_STREAM("[RRT] final path time: " << slns.back().second <<
+                    "final path len: " << slns.back().first);
             }
         }
 
@@ -147,7 +168,27 @@ public:
                 vis_ptr_->visualize_path(final_path, "rrt_star_final_path");
                 vis_ptr_->visualize_pointcloud(final_path, "rrt_star_final_wpts");
                 vector<std::pair<double, double>> slns = rrt_star_ptr_->getSolutions();
-                ROS_INFO_STREAM("[RRT*] final path len: " << slns.back().first);
+                ROS_INFO_STREAM("[RRT*] final path time: " << slns.back().second <<
+                    "final path len: " << slns.back().first);
+            }
+        }
+
+        if(run_bounce_rrt_star_)
+        {
+            // todo!!!!!!!!!!
+            bool bounce_rrt_star_res = bounce_rrt_star_ptr_->plan(start_, goal_);
+            if(bounce_rrt_star_res)
+            {
+                vector<vector<Eigen::Vector3d>> routes = bounce_rrt_star_ptr_->getAllPaths();
+                vis_ptr_->visualize_path_list(routes, "bounce_rrt_star_paths", visualization::blue);
+                vector<Eigen::Vector3d> final_path = bounce_rrt_star_ptr_->getPath();
+                vis_ptr_->visualize_path(final_path, "bounce_rrt_star_final_path");
+                vis_ptr_->visualize_pointcloud(final_path, "bounce_rrt_star_final_wpts");
+                vector<std::pair<Eigen::Vector3d, double>> slns = bounce_rrt_star_ptr_->getSolutions();  
+                ROS_INFO_STREAM("[Bounce RRT*] final path time: " << slns.back().second << 
+                     ", total cost: " << slns.back().first(0) <<
+                     ", dis_cost: " << slns.back().first(1) <<
+                     ", dir_cost: " << slns.back().first(2));         
             }
         }
 
